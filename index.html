@@ -1,0 +1,366 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>KC Ren Fest Map</title>
+<meta name="description" content="Interactive Kansas City Renaissance Festival map. Tap any booth, food stall, stage or game to see what's there.">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="KC Ren Fest Map">
+<meta property="og:title" content="KC Ren Fest Map">
+<meta property="og:description" content="Tap any booth, food stall, stage or game to see what's there.">
+<meta property="og:url" content="https://kc-renfest-map.vercel.app/">
+<meta property="og:image" content="https://kc-renfest-map.vercel.app/og.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="KC Renaissance Festival grounds map">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="KC Ren Fest Map">
+<meta name="twitter:description" content="Tap any booth, food stall, stage or game to see what's there.">
+<meta name="twitter:image" content="https://kc-renfest-map.vercel.app/og.jpg">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath d='M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z' fill='%231f3a8a'/%3E%3Ccircle cx='12' cy='10' r='2.6' fill='white'/%3E%3C/svg%3E">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IM+Fell+English+SC&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+:root{
+  --bg:#eef0f4; --surface:#ffffff; --ink:#1b2236; --muted:#5b6479; --line:#d5d9e3;
+  --banner:#1f3a8a; --banner-ink:#f6f3ea; --accent:#b3261e;
+  --k-vendor:#2b3550; --k-food:#8d5bb0; --k-game:#6d9a22; --k-history:#d98a0f; --k-stage:#2f86c8; --k-place:#7a5230;
+  --shadow:0 10px 30px rgba(20,28,50,.22);
+  --display:"IM Fell English SC", Georgia, "Times New Roman", serif;
+  --body:"Source Sans 3", system-ui, -apple-system, "Segoe UI", sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#121624; --surface:#1c2236; --ink:#e9ebf2; --muted:#9aa3ba; --line:#30384f;
+    --banner:#1a2c66; --banner-ink:#f3efe3; --accent:#ef6a5f;
+    --k-vendor:#c9d0e4; --k-food:#c39be0; --k-game:#a5d25a; --k-history:#f4b24a; --k-stage:#6fb8ee; --k-place:#d0a47a;
+    --shadow:0 10px 30px rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#121624; --surface:#1c2236; --ink:#e9ebf2; --muted:#9aa3ba; --line:#30384f;
+  --banner:#1a2c66; --banner-ink:#f3efe3; --accent:#ef6a5f;
+  --k-vendor:#c9d0e4; --k-food:#c39be0; --k-game:#a5d25a; --k-history:#f4b24a; --k-stage:#6fb8ee; --k-place:#d0a47a;
+  --shadow:0 10px 30px rgba(0,0,0,.5);
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:0 40px}
+.wrap{max-width:1200px;margin:0 auto;display:flex;flex-direction:column;gap:14px}
+header.banner{margin-inline:-16px;background:var(--banner);color:var(--banner-ink);padding:14px 16px 12px}
+header.banner .in{max-width:1200px;margin:0 auto;display:flex;flex-wrap:wrap;align-items:baseline;justify-content:space-between;gap:4px 16px}
+h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,5vw,36px);margin:0;letter-spacing:.01em;text-wrap:balance}
+.sub{font-size:13px;opacity:.85}
+.ttl{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+h1 a{color:inherit;text-decoration:none;border-bottom:1px solid transparent}
+h1 a:hover,h1 a:focus-visible{border-bottom-color:currentColor}
+.dir-btn{display:inline-flex;align-items:center;gap:6px;color:var(--banner-ink);text-decoration:none;font-size:13px;font-weight:600;border:1px solid color-mix(in srgb,var(--banner-ink) 45%,transparent);border-radius:999px;padding:5px 11px 5px 8px}
+.dir-btn:hover,.dir-btn:focus-visible{background:color-mix(in srgb,var(--banner-ink) 14%,transparent)}
+header.banner a:focus-visible{outline:2px solid var(--banner-ink);outline-offset:3px}
+.toolbar{display:flex;flex-direction:column;gap:10px}
+.search{display:flex;gap:8px}
+.search input{flex:1;min-width:0;font:inherit;font-size:16px;padding:10px 12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink)}
+.search input:focus-visible,button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
+.chip{flex:none;font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:6px 12px;cursor:pointer;display:inline-flex;align-items:center;gap:6px}
+.chip .dot{width:10px;height:10px;border-radius:50%;background:var(--c,var(--muted))}
+.chip[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.stage-wrap{position:relative;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#e7dcc0}
+#viewport{height:min(72vh,760px);overflow:auto;touch-action:pan-x pan-y;overscroll-behavior:contain;cursor:grab}
+#viewport.dragging{cursor:grabbing}
+#canvas{position:relative;width:100%}
+#canvas img{display:block;width:100%;height:auto;max-width:none;user-select:none;-webkit-user-drag:none;pointer-events:none}
+.zoom{position:absolute;right:10px;top:10px;display:flex;flex-direction:column;gap:6px;z-index:5}
+.zoom button{width:38px;height:38px;border-radius:8px;border:1px solid var(--line);background:var(--surface);color:var(--ink);font-size:20px;font-weight:700;cursor:pointer;box-shadow:0 2px 6px rgba(0,0,0,.15)}
+.zoom button.fit{font-size:11px}
+.mk{position:absolute;width:30px;height:30px;margin:-15px 0 0 -15px;border-radius:50%;border:0;padding:0;background:transparent;cursor:pointer;z-index:2}
+.mk::after{content:"";position:absolute;inset:3px;border-radius:50%;border:2.5px solid transparent;transition:border-color .12s,background .12s,transform .12s}
+.mk:hover::after,.mk.on::after{border-color:var(--kc);background:color-mix(in srgb,var(--kc) 22%,transparent)}
+.mk.hit::after{border-color:var(--accent);background:color-mix(in srgb,var(--accent) 25%,transparent);animation:pulse 1.6s ease-in-out infinite}
+.mk.fav::before{content:"★";position:absolute;right:-6px;top:-8px;font-size:14px;color:#f2b705;text-shadow:0 0 2px #000;z-index:1}
+.mk[hidden]{display:none}
+@keyframes pulse{50%{transform:scale(1.25)}}
+@media (prefers-reduced-motion:reduce){.mk.hit::after{animation:none}}
+.mk.place{width:44px;height:30px;margin:-15px 0 0 -22px}
+.mk.place::after{border-radius:8px}
+.k-vendor{--kc:var(--k-vendor)} .k-food{--kc:var(--k-food)} .k-game{--kc:var(--k-game)} .k-history{--kc:var(--k-history)} .k-stage{--kc:var(--k-stage)} .k-place{--kc:var(--k-place)}
+body:not(.showdots) .mk:not(.hit):not(.on):not(:hover)::after{border-color:transparent}
+body.showdots .mk::after{border-color:color-mix(in srgb,var(--kc) 70%,transparent)}
+#pop{position:fixed;z-index:50;width:min(340px,calc(100vw - 32px));background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:12px;box-shadow:var(--shadow);padding:12px 14px 14px}
+#pop .top{display:flex;align-items:center;gap:8px;margin-bottom:6px}
+#pop .tag{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--surface);background:var(--kc);border-radius:4px;padding:2px 7px}
+#pop .num{font-family:var(--display);font-size:22px;line-height:1}
+#pop .x{margin-left:auto;border:0;background:transparent;color:var(--muted);font-size:22px;cursor:pointer;line-height:1;padding:2px 6px}
+#pop ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:8px;max-height:46vh;overflow:auto}
+#pop li{display:flex;gap:8px;align-items:flex-start}
+#pop .nm{font-weight:700;font-size:16px}
+#pop .ct{font-size:13px;color:var(--muted)}
+#pop .star{margin-left:auto;flex:none;border:1px solid var(--line);background:transparent;color:var(--muted);border-radius:6px;font-size:16px;width:32px;height:30px;cursor:pointer}
+#pop .star[aria-pressed="true"]{color:#c99400;border-color:#c99400}
+#pop .empty{color:var(--muted);font-size:14px}
+@media (max-width:640px),(pointer:coarse){
+  #pop.sheet{left:0!important;right:0;top:auto!important;bottom:0;width:auto;border-radius:14px 14px 0 0;padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+}
+.legend-note{font-size:13px;color:var(--muted);display:flex;flex-wrap:wrap;gap:4px 14px;align-items:center}
+.legend-note label{display:inline-flex;gap:6px;align-items:center;cursor:pointer}
+section.dir h2{font-family:var(--display);font-weight:400;font-size:24px;margin:10px 0 4px}
+.dir .count{font-size:13px;color:var(--muted);margin-bottom:8px}
+.groups{columns:300px 3;column-gap:22px}
+.grp{break-inside:avoid;margin-bottom:14px}
+.grp h3{font-size:12px;letter-spacing:.1em;text-transform:uppercase;margin:0 0 4px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.grp h3 .dot{width:9px;height:9px;border-radius:50%;background:var(--kc)}
+.row{display:flex;gap:10px;align-items:baseline;width:100%;text-align:left;font:inherit;color:var(--ink);background:transparent;border:0;border-bottom:1px dotted var(--line);padding:6px 2px;cursor:pointer}
+.row:hover .rn{text-decoration:underline}
+.row .rn{flex:1}
+.row .rb{font-variant-numeric:tabular-nums;color:var(--muted);font-size:13px;white-space:nowrap}
+.row.nomap{cursor:default}
+.row.nomap .rb{font-style:italic}
+.fav-on{color:#c99400}
+footer{font-size:12px;color:var(--muted)}
+</style>
+<style>html{color-scheme:light}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}@media (prefers-color-scheme: dark){html{color-scheme:dark}}</style>
+</head>
+<body>
+
+<header class="banner"><div class="in">
+  <div class="ttl">
+    <h1><a href="https://kcrenfest.com" target="_blank" rel="noopener">KC Ren Fest Map</a></h1>
+    <a class="dir-btn" href="https://maps.apple.com/?q=Kansas%20City%20Renaissance%20Festival&amp;address=633%20N%20130th%20St%2C%20Bonner%20Springs%2C%20KS%2066012" target="_blank" rel="noopener" aria-label="Directions: 633 N 130th Street, Bonner Springs, KS 66012 (opens Apple Maps)" title="633 N 130th Street, Bonner Springs, KS 66012">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s7-6.2 7-12a7 7 0 1 0-14 0c0 5.8 7 12 7 12z"/><circle cx="12" cy="10" r="2.6"/></svg>
+      <span>Directions</span>
+    </a>
+    <a class="dir-btn" href="https://www.etix.com/ticket/v/18454/kansas-city-renaissance-festival" target="_blank" rel="noopener" aria-label="Buy tickets on Etix (opens in a new window)">
+      <svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8a2 2 0 0 0 2-2h14a2 2 0 0 0 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 0-2 2H5a2 2 0 0 0-2-2v-2a2 2 0 0 0 0-4z"/><path d="M14 6v2M14 11v2M14 16v2"/></svg>
+      <span>Tickets</span>
+    </a>
+  </div>
+  <div class="sub">Tap or hover a booth, circle or place on the map</div>
+</div></header>
+
+<div class="wrap">
+  <div class="toolbar">
+    <div class="search"><input id="q" type="search" placeholder="Search: turkey legs, leather, 537, zipline…" autocomplete="off" aria-label="Search the map"></div>
+    <div class="chips" id="chips" role="toolbar" aria-label="Filter by type"></div>
+  </div>
+
+  <div class="stage-wrap">
+    <div id="viewport"><div id="canvas"><img id="mapimg" src="map.jpg" alt="Kansas City Renaissance Festival grounds map" width="3200" height="2086"></div></div>
+    <div class="zoom">
+      <button id="zin" aria-label="Zoom in">+</button>
+      <button id="zout" aria-label="Zoom out">−</button>
+      <button id="zfit" class="fit" aria-label="Fit whole map">FIT</button>
+    </div>
+  </div>
+  <div class="legend-note">
+    <label><input type="checkbox" id="dots"> Outline every clickable spot</label>
+    <span>Drag to pan · +/− to zoom · pinch on phone</span>
+  </div>
+
+  <section class="dir">
+    <h2>Directory</h2>
+    <div class="count" id="count"></div>
+    <div class="groups" id="groups"></div>
+  </section>
+  <footer>Source: KCRF 2024 festival map and program (kcrenfest.com). Booth numbers and vendors can change year to year, so confirm at the gate. Stage names aren't printed on the map; check the daily program for what's playing where.</footer>
+</div>
+
+<div id="pop" hidden role="dialog" aria-live="polite"></div>
+
+<script>
+const DATA = {"markers": [{"id": 0, "kind": "vendor", "label": "624", "x": 28.243, "y": 7.111, "items": [{"name": "Mythologicae & Renae Taylor Art", "cats": ["Artwork"]}]}, {"id": 1, "kind": "vendor", "label": "623", "x": 29.821, "y": 6.722, "items": [{"name": "Lines and Angels", "cats": ["Psychic, Tarot & Palmistry"]}]}, {"id": 2, "kind": "vendor", "label": "622", "x": 32.372, "y": 6.722, "items": [{"name": "Geode Junction", "cats": ["Wood & Stone"]}]}, {"id": 3, "kind": "vendor", "label": "611", "x": 40.534, "y": 8.396, "items": [{"name": "Kilts & Corsets", "cats": ["Clothing & Costumes"]}]}, {"id": 4, "kind": "vendor", "label": "610", "x": 41.878, "y": 8.903, "items": [{"name": "Mystic Misty's Magic Merch", "cats": ["Artwork"]}]}, {"id": 5, "kind": "vendor", "label": "606", "x": 47.468, "y": 9.889, "items": [{"name": "Beautiful Day Farms", "cats": ["Fragrance, Bath & Herbs", "Treats"]}]}, {"id": 6, "kind": "vendor", "label": "667", "x": 36.404, "y": 11.503, "items": [{"name": "Ye Olde Sand Art", "cats": ["Make Thy Own"]}]}, {"id": 7, "kind": "vendor", "label": "609", "x": 42.365, "y": 14.759, "items": [{"name": "Tinkerz Wife", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 8, "kind": "vendor", "label": "612", "x": 42.598, "y": 17.0, "items": [{"name": "Posh Pirate", "cats": ["Accessories"]}, {"name": "Posh Pirate Permanent Jewelry", "cats": ["Jewelry"]}]}, {"id": 9, "kind": "vendor", "label": "601", "x": 47.176, "y": 14.013, "items": [{"name": "Level Up Creations", "cats": ["Accessories", "Clothing & Costumes"]}]}, {"id": 10, "kind": "vendor", "label": "600", "x": 46.163, "y": 15.387, "items": [{"name": "The Scarlett Rose", "cats": ["Clothing & Costumes"]}]}, {"id": 11, "kind": "vendor", "label": "641", "x": 32.509, "y": 25.575, "items": []}, {"id": 12, "kind": "vendor", "label": "518", "x": 46.007, "y": 25.396, "items": [{"name": "Pathfinder Bird Whistles Two", "cats": ["Musical Instruments"]}]}, {"id": 13, "kind": "vendor", "label": "518", "x": 24.951, "y": 45.922, "items": [{"name": "Pathfinder Bird Whistles Two", "cats": ["Musical Instruments"]}]}, {"id": 14, "kind": "vendor", "label": "628", "x": 24.951, "y": 10.636, "items": [{"name": "Coventry Leather", "cats": ["Leather"]}, {"name": "Chocolate Moonshine", "cats": ["Treats"]}]}, {"id": 15, "kind": "vendor", "label": "629", "x": 23.977, "y": 11.383, "items": [{"name": "Kattegat Traders", "cats": ["Mixed Media"]}]}, {"id": 16, "kind": "vendor", "label": "630", "x": 23.14, "y": 12.698, "items": [{"name": "Fame and Fortune Leather", "cats": ["Leather"]}]}, {"id": 17, "kind": "vendor", "label": "631", "x": 22.283, "y": 13.803, "items": [{"name": "Prism Moon Designs", "cats": ["Accessories"]}]}, {"id": 18, "kind": "vendor", "label": "638", "x": 21.913, "y": 24.649, "items": [{"name": "Ophelia's", "cats": ["Clothing & Costumes"]}]}, {"id": 19, "kind": "vendor", "label": "643", "x": 22.4, "y": 26.531, "items": []}, {"id": 20, "kind": "vendor", "label": "642", "x": 22.77, "y": 28.384, "items": [{"name": "The Knotty Shoppe", "cats": ["Accessories", "Furniture"]}]}, {"id": 21, "kind": "vendor", "label": "644", "x": 23.568, "y": 30.027, "items": [{"name": "Always Azul Pottery", "cats": ["Clay, Pottery & Sculpture"]}]}, {"id": 22, "kind": "vendor", "label": "645", "x": 24.347, "y": 31.73, "items": [{"name": "Knotty Lady", "cats": ["Jewelry"]}]}, {"id": 23, "kind": "vendor", "label": "640", "x": 29.704, "y": 30.236, "items": []}, {"id": 24, "kind": "vendor", "label": "647", "x": 27.016, "y": 36.032, "items": [{"name": "The Hex House Sqwishy Glass LLC", "cats": ["Mixed Media"]}]}, {"id": 25, "kind": "vendor", "label": "648", "x": 28.964, "y": 36.301, "items": [{"name": "Braiden Maidens", "cats": ["Hair Accessories"]}]}, {"id": 26, "kind": "vendor", "label": "649", "x": 30.912, "y": 35.853, "items": [{"name": "A Treasure List", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 27, "kind": "vendor", "label": "528", "x": 32.626, "y": 36.421, "items": [{"name": "Lunar Lotus", "cats": ["Clothing & Costumes"]}]}, {"id": 28, "kind": "vendor", "label": "524", "x": 39.677, "y": 34.927, "items": [{"name": "Cold Mountain Glass", "cats": ["Glass Art"]}]}, {"id": 29, "kind": "vendor", "label": "557", "x": 46.747, "y": 32.865, "items": [{"name": "Imaginarium", "cats": ["Clay, Pottery & Sculpture"]}]}, {"id": 30, "kind": "vendor", "label": "554", "x": 43.222, "y": 36.779, "items": [{"name": "Gilded Parasol", "cats": ["Accessories"]}]}, {"id": 31, "kind": "vendor", "label": "534", "x": 26.899, "y": 39.199, "items": [{"name": "Timeless Impressions", "cats": ["Body Adornments"]}]}, {"id": 32, "kind": "vendor", "label": "533", "x": 28.477, "y": 39.886, "items": [{"name": "Sona's Art Co-Op", "cats": ["Jewelry"]}]}, {"id": 33, "kind": "vendor", "label": "531", "x": 29.996, "y": 40.335, "items": [{"name": "Ye Olde Honey House", "cats": ["Treats"]}]}, {"id": 34, "kind": "vendor", "label": "530", "x": 31.535, "y": 40.245, "items": [{"name": "Lilla Rose Hair Jewelry, Baubles, & Trinkets", "cats": ["Hair Accessories"]}]}, {"id": 35, "kind": "vendor", "label": "529", "x": 32.82, "y": 39.647, "items": [{"name": "Henna Arts Association", "cats": ["Body Adornments"]}]}, {"id": 36, "kind": "vendor", "label": "552", "x": 41.819, "y": 42.008, "items": [{"name": "Broom Sticks", "cats": ["Wood & Stone"]}]}, {"id": 37, "kind": "vendor", "label": "553", "x": 43.222, "y": 40.902, "items": [{"name": "Timeless Art of Cheryl Baker", "cats": ["Artwork"]}]}, {"id": 38, "kind": "vendor", "label": "555", "x": 44.546, "y": 39.886, "items": [{"name": "Sea Song Designs", "cats": ["Jewelry"]}]}, {"id": 39, "kind": "vendor", "label": "556", "x": 46.007, "y": 39.199, "items": [{"name": "K Dopita Studio", "cats": ["Accessories"]}]}, {"id": 40, "kind": "vendor", "label": "556", "x": 51.363, "y": 35.285, "items": [{"name": "K Dopita Studio", "cats": ["Accessories"]}]}, {"id": 41, "kind": "vendor", "label": "350", "x": 40.651, "y": 44.069, "items": [{"name": "Rose In Wax", "cats": ["Make Thy Own"]}]}, {"id": 42, "kind": "vendor", "label": "413", "x": 49.786, "y": 43.322, "items": [{"name": "True Heart Arts", "cats": ["Clay, Pottery & Sculpture"]}]}, {"id": 43, "kind": "vendor", "label": "537", "x": 23.004, "y": 41.649, "items": [{"name": "The Cat's Paw", "cats": ["Accessories"]}]}, {"id": 44, "kind": "vendor", "label": "539", "x": 24.094, "y": 43.89, "items": [{"name": "Rencycledesigns", "cats": ["Accessories"]}]}, {"id": 45, "kind": "vendor", "label": "540", "x": 29.509, "y": 45.115, "items": [{"name": "Astral Apothecary", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 46, "kind": "vendor", "label": "541", "x": 31.165, "y": 45.264, "items": [{"name": "Astral Apothecary", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 47, "kind": "vendor", "label": "543", "x": 32.723, "y": 45.563, "items": [{"name": "The Black Spot Pirate Shop", "cats": ["Clothing & Costumes"]}]}, {"id": 48, "kind": "vendor", "label": "544", "x": 34.203, "y": 45.922, "items": [{"name": "Drunken Dwarf Glass Company", "cats": ["Glass Art"]}]}, {"id": 49, "kind": "vendor", "label": "545", "x": 36.151, "y": 45.862, "items": [{"name": "Wizard's Toys", "cats": ["Children's"]}]}, {"id": 50, "kind": "vendor", "label": "547", "x": 37.612, "y": 45.862, "items": [{"name": "Set In Stone", "cats": ["Jewelry"]}]}, {"id": 51, "kind": "vendor", "label": "310", "x": 43.825, "y": 48.372, "items": [{"name": "The Whimsical Heart", "cats": ["Mixed Media"]}]}, {"id": 52, "kind": "vendor", "label": "311", "x": 45.092, "y": 48.461, "items": [{"name": "Pixie Point", "cats": ["Accessories"]}]}, {"id": 53, "kind": "vendor", "label": "312", "x": 46.377, "y": 48.551, "items": [{"name": "Plum & Lotus", "cats": ["Accessories"]}]}, {"id": 54, "kind": "vendor", "label": "313", "x": 47.604, "y": 48.163, "items": [{"name": "Plain Jane's Soap and Such", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 55, "kind": "vendor", "label": "314", "x": 48.325, "y": 48.999, "items": [{"name": "Ash & Griffin Pottery", "cats": ["Clay, Pottery & Sculpture"]}]}, {"id": 56, "kind": "vendor", "label": "315", "x": 49.065, "y": 50.045, "items": []}, {"id": 57, "kind": "vendor", "label": "316", "x": 49.416, "y": 51.718, "items": [{"name": "Boar's Head Leather, LLC", "cats": ["Leather"]}]}, {"id": 58, "kind": "vendor", "label": "300", "x": 33.113, "y": 52.286, "items": [{"name": "Elven Caravan", "cats": ["Accessories"]}]}, {"id": 59, "kind": "vendor", "label": "302", "x": 35.06, "y": 52.286, "items": [{"name": "North Tortuga Trading Co", "cats": ["Clothing & Costumes"]}]}, {"id": 60, "kind": "vendor", "label": "338", "x": 24.718, "y": 53.78, "items": [{"name": "Ruth Thompson Fantasy Art", "cats": ["Artwork"]}]}, {"id": 61, "kind": "vendor", "label": "338", "x": 42.598, "y": 54.885, "items": [{"name": "Ruth Thompson Fantasy Art", "cats": ["Artwork"]}]}, {"id": 62, "kind": "vendor", "label": "389", "x": 26.178, "y": 52.853, "items": [{"name": "Pick a Pearl", "cats": ["Jewelry"]}]}, {"id": 63, "kind": "vendor", "label": "390", "x": 27.639, "y": 52.106, "items": [{"name": "Pathfinder Bird Whistles", "cats": ["Musical Instruments"]}]}, {"id": 64, "kind": "vendor", "label": "383", "x": 20.686, "y": 58.261, "items": [{"name": "American Shaman", "cats": ["Services"]}]}, {"id": 65, "kind": "vendor", "label": "382", "x": 20.062, "y": 60.203, "items": [{"name": "Mirkywood Emporium", "cats": ["Wood & Stone"]}]}, {"id": 66, "kind": "vendor", "label": "380", "x": 19.634, "y": 62.444, "items": [{"name": "Veronica's Veil, Henna, & Body Art", "cats": ["Body Adornments"]}]}, {"id": 67, "kind": "vendor", "label": "373", "x": 19.283, "y": 65.133, "items": [{"name": "Port Royal Tradin", "cats": ["Accessories"]}]}, {"id": 68, "kind": "vendor", "label": "358", "x": 24.347, "y": 68.898, "items": [{"name": "Boss Wench", "cats": ["Clothing & Costumes"]}]}, {"id": 69, "kind": "vendor", "label": "349", "x": 32.743, "y": 56.2, "items": [{"name": "T'ger Toggs", "cats": ["Clothing & Costumes"]}]}, {"id": 70, "kind": "vendor", "label": "347", "x": 33.716, "y": 58.261, "items": [{"name": "Clay & Wick", "cats": ["Accessories"]}]}, {"id": 71, "kind": "vendor", "label": "303", "x": 36.268, "y": 56.02, "items": [{"name": "Woodside Illustrations", "cats": ["Artwork"]}]}, {"id": 72, "kind": "vendor", "label": "345", "x": 37.729, "y": 56.468, "items": [{"name": "Horn Shoppe", "cats": ["Accessories"]}]}, {"id": 73, "kind": "vendor", "label": "344", "x": 39.443, "y": 56.02, "items": [{"name": "Whitewood Leather", "cats": ["Leather"]}]}, {"id": 74, "kind": "vendor", "label": "342", "x": 41.138, "y": 55.572, "items": [{"name": "Pixie Smash Forge", "cats": ["Artwork"]}]}, {"id": 75, "kind": "vendor", "label": "334", "x": 44.118, "y": 54.526, "items": [{"name": "The Quirky Cork", "cats": ["Accessories"]}]}, {"id": 76, "kind": "vendor", "label": "337", "x": 41.995, "y": 59.008, "items": [{"name": "Oakheart Armory", "cats": ["Weaponry"]}, {"name": "Krakken Kove Merkantile", "cats": ["Mixed Media"]}]}, {"id": 77, "kind": "vendor", "label": "333", "x": 43.942, "y": 58.56, "items": [{"name": "Aquarian Org. Astrologers", "cats": ["Psychic, Tarot & Palmistry"]}]}, {"id": 78, "kind": "vendor", "label": "341", "x": 38.352, "y": 61.249, "items": [{"name": "Midknight Armory", "cats": ["Weaponry"]}, {"name": "Talon Armory", "cats": ["Weaponry"]}]}, {"id": 79, "kind": "vendor", "label": "240", "x": 42.111, "y": 61.996, "items": [{"name": "Heart's Delight", "cats": ["Clothing & Costumes"]}]}, {"id": 80, "kind": "vendor", "label": "238", "x": 38.352, "y": 66.477, "items": []}, {"id": 81, "kind": "vendor", "label": "235", "x": 33.716, "y": 73.768, "items": [{"name": "Oakheart Armory", "cats": ["Clothing & Costumes"]}, {"name": "Twisted Thistle Trading Co", "cats": ["Playful Things"]}]}, {"id": 82, "kind": "vendor", "label": "504", "x": 55.025, "y": 28.384, "items": []}, {"id": 83, "kind": "vendor", "label": "503", "x": 54.538, "y": 30.624, "items": []}, {"id": 84, "kind": "vendor", "label": "502", "x": 53.681, "y": 32.686, "items": [{"name": "Le Loup Garou Alchemy", "cats": ["Make Thy Own"]}]}, {"id": 85, "kind": "vendor", "label": "501", "x": 52.591, "y": 33.971, "items": [{"name": "Face Painting By Vivien", "cats": ["Body Adornments"]}]}, {"id": 86, "kind": "vendor", "label": "167", "x": 67.082, "y": 32.477, "items": [{"name": "Pathfinder Weaponry", "cats": ["Weaponry"]}]}, {"id": 87, "kind": "vendor", "label": "166", "x": 68.718, "y": 31.043, "items": [{"name": "SolTree", "cats": ["Clothing & Costumes"]}]}, {"id": 88, "kind": "vendor", "label": "164", "x": 69.731, "y": 30.176, "items": [{"name": "Unicorn Glass", "cats": ["Glass Art"]}]}, {"id": 89, "kind": "vendor", "label": "155", "x": 77.269, "y": 30.385, "items": [{"name": "Hammer & Thread", "cats": ["Leather"]}, {"name": "Great Northern Woodworking", "cats": ["Wood & Stone"]}]}, {"id": 90, "kind": "vendor", "label": "154", "x": 78.34, "y": 30.385, "items": [{"name": "Witches, Wizards & Santas", "cats": ["Clay, Pottery & Sculpture"]}]}, {"id": 91, "kind": "vendor", "label": "152", "x": 81.321, "y": 30.923, "items": [{"name": "Henna Arts Association", "cats": ["Body Adornments"]}]}, {"id": 92, "kind": "vendor", "label": "151", "x": 83.015, "y": 31.192, "items": [{"name": "The Dragon's Den", "cats": ["Children's"]}]}, {"id": 93, "kind": "vendor", "label": "412", "x": 50.156, "y": 45.742, "items": [{"name": "Patchwork Moon by Luna", "cats": ["Clothing & Costumes"]}]}, {"id": 94, "kind": "vendor", "label": "411", "x": 51.734, "y": 47.057, "items": [{"name": "Sea to Sky", "cats": ["Clothing & Costumes"]}]}, {"id": 95, "kind": "vendor", "label": "410", "x": 53.194, "y": 48.372, "items": [{"name": "Osborne Leather", "cats": ["Leather"]}]}, {"id": 96, "kind": "vendor", "label": "409", "x": 54.538, "y": 48.909, "items": [{"name": "House of Genevieve", "cats": ["Clothing & Costumes"]}]}, {"id": 97, "kind": "vendor", "label": "408", "x": 55.882, "y": 49.656, "items": [{"name": "Ayers Pottery", "cats": ["Clay, Pottery & Sculpture"]}]}, {"id": 98, "kind": "vendor", "label": "407", "x": 56.856, "y": 50.612, "items": []}, {"id": 99, "kind": "vendor", "label": "406", "x": 57.83, "y": 51.15, "items": [{"name": "Jiva Silk Originals", "cats": ["Clothing & Costumes"]}]}, {"id": 100, "kind": "vendor", "label": "405", "x": 58.921, "y": 51.718, "items": [{"name": "The Bard's Musik Shoppe", "cats": ["Musical Instruments"]}]}, {"id": 101, "kind": "vendor", "label": "404", "x": 59.895, "y": 52.106, "items": []}, {"id": 102, "kind": "vendor", "label": "403", "x": 61.239, "y": 52.584, "items": [{"name": "Jiva Fairywear", "cats": ["Clothing & Costumes"]}]}, {"id": 103, "kind": "vendor", "label": "402", "x": 62.33, "y": 52.943, "items": [{"name": "A New World Henna", "cats": ["Body Adornments"]}]}, {"id": 104, "kind": "vendor", "label": "401", "x": 63.42, "y": 53.212, "items": []}, {"id": 105, "kind": "vendor", "label": "400", "x": 64.647, "y": 53.391, "items": [{"name": "Heirloom Metal & Stone", "cats": ["Jewelry"]}]}, {"id": 106, "kind": "vendor", "label": "707", "x": 63.537, "y": 48.372, "items": []}, {"id": 107, "kind": "vendor", "label": "186", "x": 74.503, "y": 43.89, "items": [{"name": "Historical Research Center", "cats": ["Services"]}]}, {"id": 108, "kind": "vendor", "label": "182", "x": 70.608, "y": 49.866, "items": [{"name": "Mugged by S.o.L", "cats": ["Wood & Stone"]}]}, {"id": 109, "kind": "vendor", "label": "183", "x": 71.815, "y": 48.999, "items": [{"name": "Enchanted Etchings", "cats": ["Glass Art"]}]}, {"id": 110, "kind": "vendor", "label": "184", "x": 73.276, "y": 47.804, "items": [{"name": "Majikah Perfumery", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 111, "kind": "vendor", "label": "189", "x": 74.99, "y": 46.489, "items": [{"name": "Fyne Hats by Felicity (Weekends 4-7)", "cats": ["Clothing & Costumes"]}, {"name": "Fairytales & Dragon Scales (Weekends 1-3)", "cats": ["Children's"]}]}, {"id": 112, "kind": "vendor", "label": "279", "x": 72.556, "y": 51.718, "items": [{"name": "Accents", "cats": ["Clothing & Costumes"]}]}, {"id": 113, "kind": "vendor", "label": "278", "x": 74.25, "y": 51.359, "items": [{"name": "Braiden Maidens", "cats": ["Hair Accessories"]}]}, {"id": 114, "kind": "vendor", "label": "277", "x": 75.711, "y": 51.539, "items": [{"name": "Sticks and Stones by Heather", "cats": ["Accessories"]}]}, {"id": 115, "kind": "vendor", "label": "276", "x": 76.938, "y": 52.853, "items": [{"name": "Silverhawk Leather", "cats": ["Leather"]}]}, {"id": 116, "kind": "vendor", "label": "275", "x": 77.912, "y": 54.885, "items": [{"name": "Funky Fairy Art (Weekends 5-7)", "cats": ["Clothing & Costumes"]}, {"name": "Wolf in Sheep's Clothing (Weekends 1-4)", "cats": ["Clothing & Costumes"]}]}, {"id": 117, "kind": "vendor", "label": "274", "x": 79.003, "y": 56.947, "items": [{"name": "MacCamie Studios", "cats": ["Clothing & Costumes"]}]}, {"id": 118, "kind": "vendor", "label": "273", "x": 80.347, "y": 58.56, "items": [{"name": "Mask Parade", "cats": ["Accessories"]}]}, {"id": 119, "kind": "vendor", "label": "272", "x": 74.503, "y": 54.885, "items": [{"name": "R & R Creations", "cats": ["Wood & Stone"]}]}, {"id": 120, "kind": "vendor", "label": "245", "x": 54.422, "y": 56.947, "items": [{"name": "Wyldflowers Apothecary", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 121, "kind": "vendor", "label": "246", "x": 55.999, "y": 55.632, "items": []}, {"id": 122, "kind": "vendor", "label": "249", "x": 59.525, "y": 56.2, "items": []}, {"id": 123, "kind": "vendor", "label": "250", "x": 61.239, "y": 57.335, "items": [{"name": "Village Coin Mint", "cats": ["Jewelry"]}]}, {"id": 124, "kind": "vendor", "label": "251", "x": 62.933, "y": 57.215, "items": [{"name": "Hope's Light Candles", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 125, "kind": "vendor", "label": "254", "x": 64.764, "y": 56.2, "items": [{"name": "Gypsy Angel", "cats": ["Psychic, Tarot & Palmistry"]}]}, {"id": 126, "kind": "vendor", "label": "255", "x": 69.868, "y": 59.187, "items": [{"name": "Fierce Flare", "cats": ["Jewelry"]}]}, {"id": 127, "kind": "vendor", "label": "257", "x": 67.686, "y": 59.456, "items": []}, {"id": 128, "kind": "vendor", "label": "258", "x": 65.972, "y": 59.755, "items": [{"name": "Ye Ol' Caricature", "cats": ["Artwork"]}]}, {"id": 129, "kind": "vendor", "label": "259", "x": 64.024, "y": 60.114, "items": [{"name": "A Wench in the Gear LLC", "cats": ["Clothing & Costumes"]}]}, {"id": 130, "kind": "vendor", "label": "266", "x": 71.874, "y": 59.606, "items": [{"name": "Gypsy Feathers", "cats": ["Jewelry"]}]}, {"id": 131, "kind": "vendor", "label": "260", "x": 61.959, "y": 61.607, "items": [{"name": "Frank Keith Art", "cats": ["Artwork", "Clay, Pottery & Sculpture"]}]}, {"id": 132, "kind": "vendor", "label": "261", "x": 63.303, "y": 63.31, "items": [{"name": "Cosgrove Creations", "cats": ["Jewelry"]}]}, {"id": 133, "kind": "vendor", "label": "263", "x": 65.972, "y": 63.669, "items": [{"name": "Sage Monkey", "cats": ["Clothing & Costumes"]}]}, {"id": 134, "kind": "vendor", "label": "264", "x": 67.803, "y": 63.31, "items": [{"name": "Wood, Willow & Whatknots", "cats": ["Fragrance, Bath & Herbs"]}]}, {"id": 135, "kind": "vendor", "label": "706", "x": 82.295, "y": 44.249, "items": []}, {"id": 136, "kind": "vendor", "label": "192", "x": 87.359, "y": 47.714, "items": [{"name": "Canterbury Clothiers Company", "cats": ["Clothing & Costumes"]}]}, {"id": 137, "kind": "vendor", "label": "193", "x": 87.398, "y": 50.224, "items": [{"name": "Ye Olde Sand Art", "cats": ["Make Thy Own"]}]}, {"id": 138, "kind": "vendor", "label": "194", "x": 87.281, "y": 53.391, "items": [{"name": "Seymour's of London", "cats": ["Accessories"]}]}, {"id": 139, "kind": "vendor", "label": "127", "x": 91.06, "y": 47.057, "items": [{"name": "Fairytail Chainmaille", "cats": ["Metal"]}]}, {"id": 140, "kind": "vendor", "label": "126", "x": 91.293, "y": 48.73, "items": [{"name": "Enchanted Images", "cats": ["Services"]}]}, {"id": 141, "kind": "vendor", "label": "125", "x": 91.43, "y": 50.403, "items": [{"name": "Dragons Pocket", "cats": ["Mixed Media"]}]}, {"id": 142, "kind": "vendor", "label": "124", "x": 91.293, "y": 52.106, "items": [{"name": "Black Dragon Armory, LLC", "cats": ["Weaponry"]}]}, {"id": 143, "kind": "vendor", "label": "123", "x": 91.43, "y": 53.69, "items": [{"name": "Class Glass", "cats": ["Glass Art"]}]}, {"id": 144, "kind": "vendor", "label": "122", "x": 91.371, "y": 55.273, "items": [{"name": "Royal Eggs", "cats": ["Clay, Pottery & Sculpture"]}]}, {"id": 145, "kind": "vendor", "label": "121", "x": 91.293, "y": 56.947, "items": [{"name": "Land of Merriment", "cats": ["Children's"]}]}, {"id": 146, "kind": "vendor", "label": "116", "x": 91.43, "y": 58.62, "items": [{"name": "Rogue's Gallery", "cats": ["Jewelry"]}]}, {"id": 147, "kind": "vendor", "label": "115", "x": 91.917, "y": 60.502, "items": [{"name": "Aunt Nancy's Face Art", "cats": ["Body Adornments"]}]}, {"id": 148, "kind": "vendor", "label": "210", "x": 67.803, "y": 73.379, "items": [{"name": "Pepi & Co", "cats": ["Jewelry"]}]}, {"id": 149, "kind": "vendor", "label": "208", "x": 68.66, "y": 70.571, "items": []}, {"id": 150, "kind": "vendor", "label": "207", "x": 70.121, "y": 70.511, "items": [{"name": "Black Dragon Armory, LLC", "cats": ["Weaponry"]}]}, {"id": 151, "kind": "vendor", "label": "206", "x": 71.698, "y": 71.138, "items": [{"name": "Spangler's Realm Fantasy Paintings", "cats": ["Artwork"]}]}, {"id": 152, "kind": "vendor", "label": "204", "x": 73.413, "y": 71.885, "items": [{"name": "Messner Bee Farm", "cats": ["Treats"]}]}, {"id": 153, "kind": "vendor", "label": "203", "x": 75.224, "y": 71.527, "items": [{"name": "Rock'n T Leather", "cats": ["Leather"]}, {"name": "Tickle Your Fantasy", "cats": ["Leather"]}]}, {"id": 154, "kind": "vendor", "label": "705", "x": 46.143, "y": 88.945, "items": []}, {"id": 155, "kind": "vendor", "label": "702", "x": 47.955, "y": 88.945, "items": []}, {"id": 156, "kind": "food", "label": "1–10", "x": 88.508, "y": 40.335, "items": [{"name": "#1 Turkey Legs", "cats": ["Food & Drink"], "sub": "King's Court"}, {"name": "#2 Prunella's (hot coffee)", "cats": ["Food & Drink"], "sub": "King's Court"}, {"name": "#3 Pig & Whistle Bar", "cats": ["Pub / Bar"], "sub": "King's Court"}, {"name": "#4 Potato/Hot Dog", "cats": ["Food & Drink"], "sub": "King's Court"}, {"name": "#5 Chicken & Chips", "cats": ["Food & Drink"], "sub": "King's Court"}, {"name": "#6 Panini", "cats": ["Food & Drink"], "sub": "King's Court"}, {"name": "#7 Asian Food", "cats": ["Food & Drink"], "sub": "King's Court"}, {"name": "#8 Apple Dumpling", "cats": ["Food & Drink"], "sub": "King's Court"}, {"name": "#9 Ice Cream", "cats": ["Food & Drink"], "sub": "King's Court"}, {"name": "#10 Fountain Soda (cold coffee)", "cats": ["Food & Drink"], "sub": "King's Court"}]}, {"id": 157, "kind": "food", "label": "12–15", "x": 65.485, "y": 39.767, "items": [{"name": "#12 Bread & Veggie Wrap", "cats": ["Food & Drink"], "sub": "Cotswald Court"}, {"name": "#13 Seafood", "cats": ["Food & Drink"], "sub": "Cotswald Court"}, {"name": "#14 Dirty Pickle Pub", "cats": ["Pub / Bar"], "sub": "Cotswald Court"}, {"name": "#15 Steak & Philly", "cats": ["Food & Drink"], "sub": "Cotswald Court"}]}, {"id": 158, "kind": "food", "label": "16–22", "x": 61.473, "y": 39.767, "items": [{"name": "#16 Bloody Mary Bar", "cats": ["Pub / Bar"], "sub": "Queen's Folly Ct."}, {"name": "#17 Wizard Brew", "cats": ["Pub / Bar"], "sub": "Queen's Folly Ct."}, {"name": "#18 Peasant Pastry", "cats": ["Food & Drink"], "sub": "Queen's Folly Ct."}, {"name": "#19 Turkey Legs & Scotch Eggs", "cats": ["Food & Drink"], "sub": "Queen's Folly Ct."}, {"name": "#20 Chicken & Rueben", "cats": ["Food & Drink"], "sub": "Queen's Folly Ct."}, {"name": "#21 Appetizers", "cats": ["Food & Drink"], "sub": "Queen's Folly Ct."}, {"name": "#22 Chicken & Chips", "cats": ["Food & Drink"], "sub": "Queen's Folly Ct."}]}, {"id": 159, "kind": "food", "label": "23", "x": 69.868, "y": 39.408, "items": [{"name": "#23 Appetizers", "cats": ["Food & Drink"], "sub": "Queen's Folly Ct."}]}, {"id": 160, "kind": "food", "label": "24–32", "x": 50.643, "y": 59.456, "items": [{"name": "#24 House of Dragon Pub", "cats": ["Pub / Bar"], "sub": "Joust Court"}, {"name": "#25 Crepes", "cats": ["Food & Drink"], "sub": "Joust Court"}, {"name": "#26 Shaved Ice", "cats": ["Food & Drink"], "sub": "Joust Court"}, {"name": "#27 Soda", "cats": ["Food & Drink"], "sub": "Joust Court"}, {"name": "#28 Sandwich", "cats": ["Food & Drink"], "sub": "Joust Court"}, {"name": "#29 Chicken & Chips", "cats": ["Food & Drink"], "sub": "Joust Court"}, {"name": "#30 Burgers", "cats": ["Food & Drink"], "sub": "Joust Court"}, {"name": "#31 Hot Dogs", "cats": ["Food & Drink"], "sub": "Joust Court"}, {"name": "#32 Joust A Bar", "cats": ["Pub / Bar"], "sub": "Joust Court"}]}, {"id": 161, "kind": "food", "label": "33", "x": 40.417, "y": 42.008, "items": [{"name": "#33 Beer Cart", "cats": ["Pub / Bar"], "sub": "3 Lions Court"}]}, {"id": 162, "kind": "food", "label": "36–43", "x": 42.852, "y": 32.118, "items": [{"name": "#34 Casa Hermano", "cats": ["Food & Drink"], "sub": "3 Lions Court · 34 & 35 not separately marked"}, {"name": "#35 Ice Cream", "cats": ["Food & Drink"], "sub": "3 Lions Court · 34 & 35 not separately marked"}, {"name": "#36 Italian", "cats": ["Food & Drink"], "sub": "3 Lions Court · 34 & 35 not separately marked"}, {"name": "#37 Greek", "cats": ["Food & Drink"], "sub": "3 Lions Court · 34 & 35 not separately marked"}, {"name": "#38 Kettle Corn", "cats": ["Food & Drink"], "sub": "3 Lions Court · 34 & 35 not separately marked"}]}, {"id": 163, "kind": "food", "label": "39", "x": 45.403, "y": 20.914, "items": [{"name": "#39 Nuts", "cats": ["Food & Drink"], "sub": "3 Lions Court"}]}, {"id": 164, "kind": "food", "label": "40–42", "x": 41.624, "y": 28.384, "items": [{"name": "#40 Eagles Nest Bar", "cats": ["Pub / Bar"], "sub": "3 Lions Court"}, {"name": "#41 Fountain Drinks", "cats": ["Food & Drink"], "sub": "3 Lions Court"}, {"name": "#42 Fountain Drinks", "cats": ["Food & Drink"], "sub": "3 Lions Court"}]}, {"id": 165, "kind": "food", "label": "43", "x": 38.352, "y": 39.408, "items": [{"name": "#43 Chicken & Chips", "cats": ["Food & Drink"], "sub": "3 Lions Court"}]}, {"id": 166, "kind": "food", "label": "44", "x": 37.378, "y": 35.853, "items": [{"name": "#44 Cigar Cart", "cats": ["Food & Drink"], "sub": "3 Lions Court"}]}, {"id": 167, "kind": "food", "label": "45", "x": 36.521, "y": 7.469, "items": [{"name": "#46 Turkey Legs", "cats": ["Food & Drink"], "sub": "Queen's Court · printed as FOOD 45 on map"}]}, {"id": 168, "kind": "food", "label": "47", "x": 26.042, "y": 14.55, "items": [{"name": "#47 Dragon Claw Bar", "cats": ["Pub / Bar"], "sub": "Queen's Court"}]}, {"id": 169, "kind": "food", "label": "48", "x": 26.295, "y": 10.009, "items": [{"name": "#48 Dirty Dragon Bar", "cats": ["Pub / Bar"], "sub": "Queen's Court"}]}, {"id": 170, "kind": "food", "label": "49", "x": 22.283, "y": 56.319, "items": [{"name": "#49 Pirates Pub", "cats": ["Pub / Bar"], "sub": "Wharf"}]}, {"id": 171, "kind": "food", "label": "50", "x": 33.6, "y": 61.607, "items": [{"name": "#50 Duxbury Pub", "cats": ["Pub / Bar"], "sub": "Game Alley"}]}, {"id": 172, "kind": "food", "label": "51", "x": 63.907, "y": 87.302, "items": [{"name": "#51 Groggy Starfish Pub", "cats": ["Pub / Bar"], "sub": "Trade Winds"}]}, {"id": 173, "kind": "food", "label": "52", "x": 70.354, "y": 62.743, "items": [{"name": "#52 Merlin's Pub", "cats": ["Pub / Bar"], "sub": "Others"}]}, {"id": 174, "kind": "game", "label": "1", "x": 87.086, "y": 55.841, "items": [{"name": "Barrel & Dragon Ride", "cats": ["KCRF Games & Rides"]}]}, {"id": 175, "kind": "game", "label": "2", "x": 33.833, "y": 11.563, "items": [{"name": "Sliding Joust", "cats": ["KCRF Games & Rides"]}]}, {"id": 176, "kind": "game", "label": "3", "x": 40.534, "y": 18.225, "items": [{"name": "Swan & Ram", "cats": ["KCRF Games & Rides"]}]}, {"id": 177, "kind": "game", "label": "4", "x": 31.652, "y": 30.445, "items": [{"name": "Ship Ride", "cats": ["KCRF Games & Rides"]}]}, {"id": 178, "kind": "game", "label": "5", "x": 24.464, "y": 66.836, "items": [{"name": "Head Games", "cats": ["KCRF Games & Rides"]}]}, {"id": 179, "kind": "game", "label": "6", "x": 24.231, "y": 71.706, "items": [{"name": "Spear Throw", "cats": ["KCRF Games & Rides"]}]}, {"id": 180, "kind": "game", "label": "7", "x": 36.151, "y": 87.003, "items": [{"name": "Axe Challenge", "cats": ["KCRF Games & Rides"]}]}, {"id": 181, "kind": "game", "label": "8", "x": 31.652, "y": 67.971, "items": [{"name": "Lancelot's Challenge", "cats": ["KCRF Games & Rides"]}]}, {"id": 182, "kind": "game", "label": "9", "x": 32.859, "y": 65.551, "items": [{"name": "Pirate Ring Toss", "cats": ["KCRF Games & Rides"]}]}, {"id": 183, "kind": "game", "label": "11", "x": 57.83, "y": 48.73, "items": [{"name": "Zipline", "cats": ["KCRF Games & Rides"]}]}, {"id": 184, "kind": "game", "label": "12", "x": 57.343, "y": 86.555, "items": [{"name": "Crow's Nest", "cats": ["KCRF Games & Rides"]}]}, {"id": 185, "kind": "game", "label": "✕", "x": 46.63, "y": 84.404, "items": [{"name": "Other games", "cats": ["Games"]}]}, {"id": 186, "kind": "game", "label": "✕", "x": 60.012, "y": 75.441, "items": [{"name": "Other games", "cats": ["Games"]}]}, {"id": 187, "kind": "game", "label": "✕", "x": 66.946, "y": 78.428, "items": [{"name": "Other games", "cats": ["Games"]}]}, {"id": 188, "kind": "history", "label": "1", "x": 72.789, "y": 65.163, "items": [{"name": "Paper Making", "cats": ["Living History"], "sub": "Bookbinding w/ Levina · start here for your Living History card"}]}, {"id": 189, "kind": "history", "label": "2", "x": 73.529, "y": 57.873, "items": [{"name": "Herb Hollow", "cats": ["Living History"], "sub": "Medicinal herbs w/ Janet"}]}, {"id": 190, "kind": "history", "label": "3", "x": 69.381, "y": 50.702, "items": [{"name": "Yeoman Camp", "cats": ["Living History"], "sub": "Weaponry and warfare w/ the Yeoman"}]}, {"id": 191, "kind": "history", "label": "4", "x": 47.604, "y": 35.106, "items": [{"name": "Royal Pavilion", "cats": ["Living History"], "sub": "Music & education w/ John Dee & Juliet Bell"}]}, {"id": 192, "kind": "history", "label": "5", "x": 54.908, "y": 20.347, "items": [{"name": "Royal Glade", "cats": ["Living History"], "sub": "Lace making w/ Royal Lacers"}]}, {"id": 193, "kind": "history", "label": "7", "x": 57.343, "y": 29.131, "items": [{"name": "Chainmail Guild", "cats": ["Living History"], "sub": "Queen's Commons"}]}, {"id": 194, "kind": "history", "label": "8", "x": 35.917, "y": 32.686, "items": [{"name": "IHEA Blacksmithing", "cats": ["Living History"], "sub": "Fiber arts & trade crafts · booth 651"}]}, {"id": 195, "kind": "history", "label": "8", "x": 57.694, "y": 31.73, "items": [{"name": "IHEA Blacksmithing", "cats": ["Living History"], "sub": "Fiber arts & trade crafts · booth 651"}]}, {"id": 196, "kind": "history", "label": "9", "x": 32.996, "y": 59.934, "items": [{"name": "Bee Keeping & Candle Making", "cats": ["Living History"], "sub": "With Clay & Wick · booth 347"}]}, {"id": 197, "kind": "history", "label": "10", "x": 61.843, "y": 55.931, "items": [{"name": "Currency & Coins", "cats": ["Living History"], "sub": "W/ Coin Mint · booth 250"}]}, {"id": 198, "kind": "history", "label": "11", "x": 33.483, "y": 88.886, "items": [{"name": "Petting Zoo", "cats": ["Living History"], "sub": "Near Trade Winds"}]}, {"id": 199, "kind": "history", "label": "12", "x": 70.841, "y": 31.371, "items": [{"name": "Royal Lunch Pavilion", "cats": ["Living History"], "sub": ""}]}, {"id": 200, "kind": "stage", "label": "1", "x": 58.181, "y": 64.416, "items": [{"name": "Stage 1", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 201, "kind": "stage", "label": "2", "x": 90.125, "y": 64.595, "items": [{"name": "Stage 2", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 202, "kind": "stage", "label": "3", "x": 83.638, "y": 53.092, "items": [{"name": "Stage 3 · Children's Realm", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 203, "kind": "stage", "label": "4", "x": 75.36, "y": 61.07, "items": [{"name": "Stage 4", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 204, "kind": "stage", "label": "5", "x": 77.795, "y": 47.505, "items": [{"name": "Stage 5", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 205, "kind": "stage", "label": "6", "x": 79.49, "y": 39.02, "items": [{"name": "Stage 6", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 206, "kind": "stage", "label": "7", "x": 75.964, "y": 40.992, "items": [{"name": "Stage 7", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 207, "kind": "stage", "label": "8", "x": 67.628, "y": 46.489, "items": [{"name": "Stage 8", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 208, "kind": "stage", "label": "9", "x": 57.207, "y": 40.514, "items": [{"name": "Stage 9 · Queen's Commons", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 209, "kind": "stage", "label": "10", "x": 54.285, "y": 17.747, "items": [{"name": "Stage 10", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 210, "kind": "stage", "label": "11", "x": 48.325, "y": 32.686, "items": [{"name": "Stage 11", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 211, "kind": "stage", "label": "12", "x": 52.045, "y": 25.695, "items": [{"name": "Stage 12 · Three Lions Stage", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 212, "kind": "stage", "label": "13", "x": 42.735, "y": 20.615, "items": [{"name": "Stage 13", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 213, "kind": "stage", "label": "14", "x": 28.438, "y": 22.468, "items": [{"name": "Stage 14", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 214, "kind": "stage", "label": "15", "x": 34.203, "y": 24.649, "items": [{"name": "Stage 15", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 215, "kind": "stage", "label": "16", "x": 32.139, "y": 19.719, "items": [{"name": "Stage 16", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 216, "kind": "stage", "label": "17", "x": 39.326, "y": 19.6, "items": [{"name": "Stage 17", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 217, "kind": "stage", "label": "18", "x": 19.965, "y": 36.212, "items": [{"name": "Stage 18 · Enchanted Forest", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 218, "kind": "stage", "label": "19", "x": 33.833, "y": 42.277, "items": [{"name": "Stage 19", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 219, "kind": "stage", "label": "20", "x": 31.204, "y": 57.514, "items": [{"name": "Stage 20", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 220, "kind": "stage", "label": "21", "x": 30.561, "y": 63.49, "items": [{"name": "Stage 21", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 221, "kind": "stage", "label": "22", "x": 21.796, "y": 64.984, "items": [{"name": "Stage 22", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 222, "kind": "stage", "label": "23", "x": 45.773, "y": 69.644, "items": [{"name": "Stage 23 · Joust Field", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 223, "kind": "stage", "label": "24", "x": 46.864, "y": 92.441, "items": [{"name": "Stage 24 · Trade Winds", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 224, "kind": "stage", "label": "25", "x": 59.291, "y": 87.75, "items": [{"name": "Stage 25", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 225, "kind": "stage", "label": "26", "x": 55.025, "y": 82.731, "items": [{"name": "Stage 26 · By the Maze", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 226, "kind": "stage", "label": "27", "x": 45.52, "y": 54.885, "items": [{"name": "Stage 27", "cats": ["Stage"], "sub": "Check the daily program for show times"}]}, {"id": 227, "kind": "place", "label": "Queen's Gate", "x": 13.635, "y": 13.445, "items": [], "title": "Queen's Gate"}, {"id": 228, "kind": "place", "label": "King's Gate", "x": 85.703, "y": 74.096, "items": [], "title": "King's Gate"}, {"id": 229, "kind": "place", "label": "Gate A", "x": 51.734, "y": 10.816, "items": [], "title": "Gate A"}, {"id": 230, "kind": "place", "label": "Gate B", "x": 91.547, "y": 32.566, "items": [], "title": "Gate B"}, {"id": 231, "kind": "place", "label": "First Aid", "x": 51.13, "y": 7.081, "items": [], "title": "First Aid"}, {"id": 232, "kind": "place", "label": "White Stag Inn", "x": 22.4, "y": 5.976, "items": [], "title": "White Stag Inn"}, {"id": 233, "kind": "place", "label": "Corp Events", "x": 62.33, "y": 8.963, "items": [], "title": "Corp Events"}, {"id": 234, "kind": "place", "label": "Petting Zoo", "x": 31.204, "y": 91.126, "items": [], "title": "Petting Zoo"}, {"id": 235, "kind": "place", "label": "Dog Park", "x": 60.265, "y": 91.873, "items": [], "title": "Dog Park"}, {"id": 236, "kind": "place", "label": "Maze", "x": 55.512, "y": 77.682, "items": [], "title": "Maze"}, {"id": 237, "kind": "place", "label": "Media / VIP", "x": 95.053, "y": 64.535, "items": [], "title": "Media / VIP"}, {"id": 238, "kind": "place", "label": "Children's Realm", "x": 81.067, "y": 51.539, "items": [], "title": "Children's Realm"}, {"id": 239, "kind": "place", "label": "Dungeon", "x": 27.074, "y": 68.419, "items": [], "title": "Dungeon"}, {"id": 240, "kind": "place", "label": "Mermaid Cove", "x": 13.635, "y": 40.036, "items": [], "title": "Mermaid Cove"}, {"id": 241, "kind": "place", "label": "Enchanted Forest", "x": 15.816, "y": 33.224, "items": [], "title": "Enchanted Forest"}, {"id": 242, "kind": "place", "label": "Trade Winds", "x": 49.669, "y": 93.546, "items": [{"name": "Enchanted Surprises", "cats": ["Accessories"]}, {"name": "Ren's Nest Gems (Weekends 2-3, 5-6)", "cats": ["Jewelry"]}, {"name": "Broken Leaf Tea & Apothecary", "cats": ["Treats"]}, {"name": "Angelic Imports - Goufrais USA (Weekends 3, 4, 7)", "cats": ["Treats"]}, {"name": "Baise's Woodcrafts (Weekends 4, 7)", "cats": ["Wood & Stone"]}, {"name": "Handcrafted By Heathens", "cats": ["Mixed Media"]}, {"name": "Heathen, Inc", "cats": ["Mixed Media"]}, {"name": "Michael Schaefers Designs", "cats": ["Mixed Media"]}, {"name": "Oddity Collective", "cats": ["Mixed Media"]}, {"name": "Seider's Sigil", "cats": ["Mixed Media"]}], "title": "Trade Winds"}, {"id": 243, "kind": "place", "label": "Pirates Plunge", "x": 41.761, "y": 90.738, "items": [], "title": "Pirates Plunge"}, {"id": 244, "kind": "place", "label": "Joust Field", "x": 42.852, "y": 70.571, "items": [{"name": "Fearghal Blades", "cats": ["Weaponry"], "sub": "North of Joust Field"}], "title": "Joust Field"}, {"id": 245, "kind": "place", "label": "Yorkshire Wharf", "x": 20.647, "y": 53.481, "items": [], "title": "Yorkshire Wharf"}, {"id": 246, "kind": "place", "label": "Queen's Commons", "x": 58.317, "y": 43.322, "items": [], "title": "Queen's Commons"}, {"id": 247, "kind": "place", "label": "Cotswald Commons", "x": 73.627, "y": 36.152, "items": [], "title": "Cotswald Commons"}, {"id": 248, "kind": "place", "label": "Royal Glade", "x": 60.129, "y": 17.927, "items": [], "title": "Royal Glade"}, {"id": 249, "kind": "place", "label": "The Wildewood", "x": 30.191, "y": 13.803, "items": [], "title": "The Wildewood"}, {"id": 250, "kind": "place", "label": "Three Lions Stage", "x": 49.182, "y": 18.285, "items": [], "title": "Three Lions Stage"}, {"id": 251, "kind": "place", "label": "Garden", "x": 36.151, "y": 70.212, "items": [], "title": "Garden"}, {"id": 252, "kind": "place", "label": "Mural Gallery", "x": 74.386, "y": 30.475, "items": [], "title": "Mural Gallery"}], "unmarked": [{"name": "Lady Adia", "cat": "Jewelry", "booth": "187"}, {"name": "Blackstone Bath and Boutique", "cat": "Fragrance, Bath & Herbs", "booth": "190"}, {"name": "Badger Blades", "cat": "Weaponry", "booth": "243"}, {"name": "Bows of the Risen Son", "cat": "Weaponry", "booth": "244"}, {"name": "Authentic Wardrobe", "cat": "Clothing & Costumes", "booth": "247"}, {"name": "Skiddlyrumpus Studios", "cat": "Playful Things", "booth": "388"}, {"name": "Crimson Chain", "cat": "Leather", "booth": "426"}, {"name": "Whimsical Wears", "cat": "Hair Accessories", "booth": "450"}, {"name": "Whimsical Wears Hair Braiding", "cat": "Hair Accessories", "booth": "451"}, {"name": "Sky Chairs", "cat": "Furniture", "booth": "500"}, {"name": "The Garlic Festival", "cat": "Treats", "booth": "602"}, {"name": "Dwarf Mountain Knives", "cat": "Weaponry", "booth": "632"}, {"name": "Blacksmiths", "cat": "Metal", "booth": "651"}], "legendBooth": {"Hammer & Thread": "155A", "Rogue's Gallery": "116-117", "Astral Apothecary": "540-542", "Krakken Kove Merkantile": "337B"}};
+const KIND = {
+  vendor:{label:"Shops",tag:"Booth"}, food:{label:"Food & drink",tag:"Food"}, stage:{label:"Stages",tag:"Stage"},
+  game:{label:"Games & rides",tag:"Game"}, history:{label:"Living History",tag:"Living History"}, place:{label:"Places",tag:"Place"}
+};
+const M = DATA.markers;
+const canvas = document.getElementById('canvas'), vp = document.getElementById('viewport'), pop = document.getElementById('pop');
+const coarse = matchMedia('(pointer:coarse)').matches;
+let favs = new Set(); try{ favs = new Set(JSON.parse(localStorage.getItem('rf-favs')||'[]')); }catch(e){}
+const saveFavs = ()=>{ try{ localStorage.setItem('rf-favs', JSON.stringify([...favs])); }catch(e){} };
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+// ---------- markers ----------
+const els = M.map(m=>{
+  const b = document.createElement('button');
+  b.className = `mk k-${m.kind}` + (m.kind==='place'?' place':'');
+  b.style.left = m.x+'%'; b.style.top = m.y+'%';
+  const names = m.items.map(i=>i.name).join(', ');
+  b.setAttribute('aria-label', `${KIND[m.kind].tag} ${m.title||m.label}${names?': '+names:''}`);
+  b.addEventListener('mouseenter', ()=>{ if(!coarse && pinned===null) show(m.id, false); });
+  b.addEventListener('mouseleave', ()=>{ if(!coarse && pinned===null) hide(); });
+  b.addEventListener('click', e=>{ e.stopPropagation(); if(moved) return; pinned = m.id; show(m.id, true); });
+  canvas.appendChild(b); return b;
+});
+const markFavs = ()=> M.forEach((m,i)=> els[i].classList.toggle('fav', m.items.some(it=>favs.has(it.name)) || favs.has('m'+m.id)));
+
+// ---------- popup ----------
+let pinned = null;
+function show(id, sticky){
+  const m = M[id];
+  els.forEach(e=>e.classList.remove('on')); els[id].classList.add('on');
+  const k = KIND[m.kind];
+  const head = m.kind==='place' ? esc(m.title) : esc(m.label);
+  let body;
+  if(m.items.length){
+    const t=q.value.trim().toLowerCase();
+    const its = t ? [...m.items].sort((a,b)=>itemHit(b,m,t)-itemHit(a,m,t)) : m.items;
+    body = '<ul>' + its.map(it=>`<li><div><div class="nm"${t&&itemHit(it,m,t)&&m.items.length>1?' style="color:var(--accent)"':''}>${esc(it.name)}</div><div class="ct">${esc(it.cats.join(' · '))}${it.sub?' — '+esc(it.sub):''}${DATA.legendBooth[it.name]?' · program lists booth '+esc(DATA.legendBooth[it.name]):''}</div></div>${sticky?`<button class="star" data-n="${esc(it.name)}" aria-pressed="${favs.has(it.name)}" aria-label="Add to our list">★</button>`:''}</li>`).join('') + '</ul>';
+  } else if(m.kind==='vendor'){
+    body = '<div class="empty">No vendor listed for this booth in the program.</div>';
+  } else {
+    body = '<div class="empty">Landmark on the festival grounds.</div>';
+  }
+  pop.className = `k-${m.kind}` + ((coarse || innerWidth<=640) ? ' sheet' : '');
+  pop.innerHTML = `<div class="top"><span class="tag">${esc(k.tag)}</span><span class="num">${head}</span>${sticky?'<button class="x" aria-label="Close">×</button>':''}</div>${body}`;
+  pop.hidden = false;
+  if(!pop.classList.contains('sheet')){
+    const r = els[id].getBoundingClientRect(), pw = pop.offsetWidth, ph = pop.offsetHeight;
+    let x = r.right + 10, y = r.top - 10;
+    if(x + pw > innerWidth - 8) x = r.left - pw - 10;
+    if(x < 8) x = 8;
+    if(y + ph > innerHeight - 8) y = innerHeight - ph - 8;
+    if(y < 8) y = 8;
+    pop.style.left = x+'px'; pop.style.top = y+'px';
+  }
+  pop.querySelector('.x')?.addEventListener('click', ()=>{ pinned=null; hide(); });
+  pop.querySelectorAll('.star').forEach(s=>s.addEventListener('click', ()=>{
+    const n = s.dataset.n; favs.has(n)?favs.delete(n):favs.add(n); s.setAttribute('aria-pressed', favs.has(n)); saveFavs(); markFavs(); renderDir();
+  }));
+}
+function hide(){ pop.hidden = true; els.forEach(e=>e.classList.remove('on')); }
+document.addEventListener('click', e=>{ if(pinned!==null && !pop.contains(e.target)){ pinned=null; hide(); } });
+document.addEventListener('keydown', e=>{ if(e.key==='Escape'){ pinned=null; hide(); } });
+vp.addEventListener('scroll', ()=>{ if(pinned!==null && !pop.classList.contains('sheet')) show(pinned, true); }, {passive:true});
+
+// ---------- zoom & pan ----------
+let zoom = 1;
+function setZoom(z, cx, cy){
+  z = Math.max(1, Math.min(5, z));
+  const r = vp.getBoundingClientRect();
+  cx = cx ?? r.width/2; cy = cy ?? r.height/2;
+  const fx = (vp.scrollLeft + cx) / canvas.offsetWidth, fy = (vp.scrollTop + cy) / canvas.offsetHeight;
+  zoom = z; canvas.style.width = (z*100)+'%';
+  vp.scrollLeft = fx*canvas.offsetWidth - cx; vp.scrollTop = fy*canvas.offsetHeight - cy;
+  if(pinned!==null && !pop.classList.contains('sheet')) show(pinned, true);
+}
+document.getElementById('zin').onclick = ()=>setZoom(zoom*1.5);
+document.getElementById('zout').onclick = ()=>setZoom(zoom/1.5);
+document.getElementById('zfit').onclick = ()=>setZoom(1);
+vp.addEventListener('wheel', e=>{ if(e.ctrlKey||e.metaKey){ e.preventDefault(); const r=vp.getBoundingClientRect(); setZoom(zoom*(e.deltaY<0?1.15:1/1.15), e.clientX-r.left, e.clientY-r.top); } }, {passive:false});
+// mouse drag to pan
+let drag=null, moved=false;
+vp.addEventListener('pointerdown', e=>{ if(e.pointerType!=='mouse') return; drag={x:e.clientX,y:e.clientY,sl:vp.scrollLeft,st:vp.scrollTop}; moved=false; });
+addEventListener('pointermove', e=>{ if(!drag) return; const dx=e.clientX-drag.x, dy=e.clientY-drag.y; if(Math.abs(dx)+Math.abs(dy)>4){ moved=true; vp.classList.add('dragging'); } vp.scrollLeft=drag.sl-dx; vp.scrollTop=drag.st-dy; });
+addEventListener('pointerup', ()=>{ drag=null; vp.classList.remove('dragging'); setTimeout(()=>moved=false,0); });
+// pinch
+let pinch=null;
+const dist = t => Math.hypot(t[0].clientX-t[1].clientX, t[0].clientY-t[1].clientY);
+vp.addEventListener('touchstart', e=>{ if(e.touches.length===2){ const r=vp.getBoundingClientRect(); pinch={d:dist(e.touches), z:zoom, cx:(e.touches[0].clientX+e.touches[1].clientX)/2-r.left, cy:(e.touches[0].clientY+e.touches[1].clientY)/2-r.top}; } }, {passive:true});
+vp.addEventListener('touchmove', e=>{ if(pinch && e.touches.length===2){ e.preventDefault(); setZoom(pinch.z*dist(e.touches)/pinch.d, pinch.cx, pinch.cy); } }, {passive:false});
+vp.addEventListener('touchend', e=>{ if(e.touches.length<2) pinch=null; });
+
+function focusMarker(id){
+  const m = M[id];
+  if(zoom < 2.2) setZoom(2.5);
+  const r = vp.getBoundingClientRect();
+  vp.scrollLeft = m.x/100*canvas.offsetWidth - r.width/2;
+  vp.scrollTop = m.y/100*canvas.offsetHeight - r.height/2;
+  vp.scrollIntoView({behavior: matchMedia('(prefers-reduced-motion:reduce)').matches?'auto':'smooth', block:'center'});
+  pinned = id; setTimeout(()=>show(id, true), 350);
+}
+
+// ---------- filters & search ----------
+let kindFilter = 'all';
+const chipDefs = [['all','Everything',null],['vendor','Shops','--k-vendor'],['food','Food & drink','--k-food'],['stage','Stages','--k-stage'],['game','Games & rides','--k-game'],['history','Living History','--k-history'],['place','Places','--k-place'],['fav','★ Our list',null]];
+const chipsEl = document.getElementById('chips');
+chipDefs.forEach(([k,l,c])=>{
+  const b=document.createElement('button'); b.className='chip'; b.dataset.k=k; b.setAttribute('aria-pressed', k==='all');
+  b.innerHTML = (c?`<span class="dot" style="--c:var(${c})"></span>`:'') + esc(l);
+  b.onclick=()=>{ kindFilter=k; chipsEl.querySelectorAll('.chip').forEach(x=>x.setAttribute('aria-pressed', x===b)); apply(); };
+  chipsEl.appendChild(b);
+});
+const q = document.getElementById('q');
+q.addEventListener('input', apply);
+document.getElementById('dots').addEventListener('change', e=>document.body.classList.toggle('showdots', e.target.checked));
+
+const hay = m => [m.label, m.title||'', KIND[m.kind].label, ...m.items.flatMap(i=>[i.name, ...i.cats, i.sub||''])].join(' ').toLowerCase();
+const HAY = M.map(hay);
+function matches(i){
+  const m=M[i], t=q.value.trim().toLowerCase();
+  if(kindFilter==='fav'){ if(!(m.items.some(it=>favs.has(it.name)))) return false; }
+  else if(kindFilter!=='all' && m.kind!==kindFilter) return false;
+  if(!t) return true;
+  return t.split(/\s+/).every(w=>HAY[i].includes(w));
+}
+function itemHit(it,m,t){ const s=(it.name+' '+it.cats.join(' ')+' '+(it.sub||'')+' '+m.label+' '+(m.title||'')+' '+KIND[m.kind].label).toLowerCase(); return t.split(/\s+/).every(w=>s.includes(w)); }
+function apply(){
+  const t=q.value.trim(), filtering = t || kindFilter!=='all';
+  M.forEach((m,i)=>{ const ok=matches(i); els[i].hidden=!ok; els[i].classList.toggle('hit', !!filtering && ok); });
+  renderDir();
+}
+
+// ---------- directory ----------
+const GROUP_ORDER = ['Food & Drink','Pub / Bar','Stage','KCRF Games & Rides','Games','Living History'];
+function renderDir(){
+  const t=q.value.trim().toLowerCase();
+  const rows=[];
+  M.forEach((m,i)=>{
+    if(!matches(i)) return;
+    if(m.kind==='place' && !m.items.length){ rows.push({g:'Places',name:m.title,b:'',id:i,kind:'place'}); return; }
+    m.items.forEach(it=>{
+      if(t && !itemHit(it,m,t)) return;
+      if(kindFilter==='fav' && !favs.has(it.name)) return;
+      const where = m.kind==='vendor' ? '#'+m.label : m.kind==='place' ? m.title : (m.kind==='food' ? 'Food '+m.label : KIND[m.kind].tag+' '+m.label);
+      it.cats.forEach(c=> rows.push({g:c, name:it.name, b:where, id:i, kind:m.kind}));
+    });
+  });
+  if(kindFilter==='all' || kindFilter==='vendor'){
+    DATA.unmarked.forEach(u=>{
+      const s=(u.name+' '+u.cat+' '+u.booth).toLowerCase();
+      if(t && !t.split(/\s+/).every(w=>s.includes(w))) return;
+      rows.push({g:u.cat, name:u.name, b:'#'+u.booth+' · not on map', id:null, kind:'vendor'});
+    });
+  }
+  // dedupe name+group, merging locations
+  const by = new Map();
+  rows.forEach(r=>{ const k=r.g+'|'+r.name; if(!by.has(k)) by.set(k,{...r, locs:[]}); by.get(k).locs.push({b:r.b,id:r.id}); });
+  const groups = new Map();
+  [...by.values()].forEach(r=>{ if(!groups.has(r.g)) groups.set(r.g,{kind:r.kind,list:[]}); groups.get(r.g).list.push(r); });
+  const names=[...groups.keys()].sort((a,b)=>{
+    const ia=GROUP_ORDER.indexOf(a), ib=GROUP_ORDER.indexOf(b);
+    if(a==='Places') return 1; if(b==='Places') return -1;
+    if(ia>=0||ib>=0) return (ia<0?99:ia)-(ib<0?99:ib);
+    return a.localeCompare(b);
+  });
+  let n=0, html='';
+  names.forEach(g=>{
+    const grp=groups.get(g);
+    grp.list.sort((a,b)=>a.name.localeCompare(b.name, undefined, {numeric:true}));
+    html += `<div class="grp k-${grp.kind}"><h3><span class="dot"></span>${esc(g)}</h3>`;
+    grp.list.forEach(r=>{
+      n++;
+      r.locs.forEach((l,j)=>{
+        const fav = favs.has(r.name) ? '<span class="fav-on" aria-label="On our list">★ </span>' : '';
+        const label = j===0 ? fav+esc(r.name) : '<span style="color:var(--muted)">↳ also</span>';
+        html += l.id===null
+          ? `<div class="row nomap"><span class="rn">${label}</span><span class="rb">${esc(l.b)}</span></div>`
+          : `<button class="row" data-id="${l.id}"><span class="rn">${label}</span><span class="rb">${esc(l.b)}</span></button>`;
+      });
+    });
+    html += '</div>';
+  });
+  document.getElementById('groups').innerHTML = html || '<p>No matches. Try a shorter search.</p>';
+  document.getElementById('count').textContent = `${n} listing${n===1?'':'s'}` + (t||kindFilter!=='all' ? ' match' : ' on the map and in the program') + '. Tap one to find it on the map.';
+  document.querySelectorAll('.row[data-id]').forEach(b=>b.onclick=e=>{ e.stopPropagation(); focusMarker(+b.dataset.id); });
+}
+
+markFavs(); apply();
+// phones: start zoomed in so spots are tappable
+addEventListener('load', ()=>{ if(innerWidth < 700){ setZoom(2.4); vp.scrollLeft = canvas.offsetWidth*0.45 - vp.clientWidth/2; vp.scrollTop = canvas.offsetHeight*0.5 - vp.clientHeight/2; } });
+</script>
+
+</body>
+</html>
